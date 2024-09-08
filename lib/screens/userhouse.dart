@@ -4,21 +4,14 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:trashure1_1/sidebar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Vehicle extends StatefulWidget {
-  const Vehicle({super.key});
+class UserHouse extends StatefulWidget {
+  const UserHouse({super.key});
 
   @override
-  State<Vehicle> createState() => _VehicleState();
+  State<UserHouse> createState() => _UserHouseState();
 }
 
-class _VehicleState extends State<Vehicle> {
-  Map<String, bool> _selectedOptions = {
-    '1': false,
-    '2': false,
-    '3': false,
-    '4': false,
-    '5': false,
-  };
+class _UserHouseState extends State<UserHouse> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +36,7 @@ class _VehicleState extends State<Vehicle> {
                           height: 30,
                         ),
                         Text(
-                          'Vehicles',
+                          'Households',
                           textAlign: TextAlign.left,
                           style: GoogleFonts.poppins(
                               textStyle: TextStyle(
@@ -123,43 +116,7 @@ class _VehicleState extends State<Vehicle> {
                                   Icon(Icons.add), // The icon
                                 ],
                               ),
-                            ),
-                            Container(
-                              width: 20,
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                // Handle button press
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF0062FF),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8), // Button padding
-                                textStyle:
-                                    TextStyle(fontSize: 16), // Text style
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize
-                                    .min, // Keep the button size minimal
-                                children: [
-                                  SizedBox(
-                                      width: 8), // Space between icon and text
-                                  Text(
-                                    'Assign Driver',
-                                    style: GoogleFonts.roboto(
-                                        textStyle: TextStyle(
-                                            fontWeight: FontWeight.w300)),
-                                  ), // The text
-                                  Icon(
-                                    Icons.assignment_ind_outlined,
-                                    size: 20,
-                                  ), // The icon
-                                ],
-                              ),
-                            ),
+                            )
                           ],
                         ),
                         SizedBox(
@@ -174,64 +131,15 @@ class _VehicleState extends State<Vehicle> {
                               Container(
                                 child: Row(
                                   children: [
-                                    Container(
-                                      height: 20,
-                                      width: 20,
-                                      decoration: BoxDecoration(
-                                          border: Border(bottom: BorderSide())),
-                                    ),
-                                    title('Vehicle ID', 1),
-                                    title('Vehicle', 2),
-                                    title('Plate Number', 1),
-                                    title('Current Driver', 2),
-                                    title('Weight Restrictions', 1),
+                                    title('Name', 2),
+                                    title('Address', 2),
+                                    title('Date Booked', 1),
+                                    title('Est. Total Weight', 1),
+                                    title('Type', 1),
+                                    title('Status', 1),
                                     title('Details', 1),
                                   ],
                                 ),
-                              ),
-                              Column(
-                                children: [
-                                  _buildCustomCheckboxTile(
-                                    '1',
-                                    'John Doe',
-                                    '123 Main St',
-                                    '2024-09-01',
-                                    '50kg',
-                                    'Recyclable',
-                                  ),
-                                  _buildCustomCheckboxTile(
-                                    '2',
-                                    'Jane Smith',
-                                    '456 Elm St',
-                                    '2024-09-05',
-                                    '30kg',
-                                    'Metal',
-                                  ),
-                                  _buildCustomCheckboxTile(
-                                    '3',
-                                    'Alice Brown',
-                                    '789 Oak St',
-                                    '2024-09-10',
-                                    '20kg',
-                                    'Plastic',
-                                  ),
-                                  _buildCustomCheckboxTile(
-                                    '4',
-                                    'Alice Brown',
-                                    '789 Oak St',
-                                    '2024-09-10',
-                                    '20kg',
-                                    'Tin',
-                                  ),
-                                  _buildCustomCheckboxTile(
-                                    '5',
-                                    'John Doe',
-                                    '123 Main St',
-                                    '2024-09-01',
-                                    '50kg',
-                                    'Recyclable',
-                                  ),
-                                ],
                               )
                             ],
                           ),
@@ -263,61 +171,5 @@ class _VehicleState extends State<Vehicle> {
             ),
           ),
         ));
-  }
-
-  Widget _buildCustomCheckboxTile(
-    String option,
-    String vehicleid,
-    String vehicle,
-    String platenumber,
-    String currentdriver,
-    String weightrestrictions,
-  ) {
-    // Determine the color based on the status
-
-    return CheckboxListTile(
-      value: _selectedOptions[option],
-      activeColor: Colors.green, // Turns green when checked
-      onChanged: (bool? value) {
-        setState(() {
-          _selectedOptions[option] = value!;
-        });
-      },
-      title: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Text(
-              vehicleid,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(vehicle),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(platenumber),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(currentdriver),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(weightrestrictions),
-          ),
-          Expanded(
-            flex: 1,
-            child: Icon(Icons.info_outline),
-          ),
-        ],
-      ),
-      controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
-    );
   }
 }

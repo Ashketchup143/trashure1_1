@@ -41,10 +41,10 @@ class _SidebarState extends State<Sidebar> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Trashure',
+                  'TRASHURE',
                   style: GoogleFonts.poppins(
                     textStyle: TextStyle(
-                      color: Color(0xFF4CAF4F),
+                      color: Color(0xFF46B948),
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                     ),
@@ -70,14 +70,22 @@ class _SidebarState extends State<Sidebar> {
               ],
             ),
           ),
-          _buildHoverableListTile(4, Icons.home, 'Dashboard'),
+          _buildHoverableListTile(
+              4, Icons.dashboard_outlined, 'Dashboard', '/dashboard'),
           _buildUsersTile(),
-          _buildHoverableListTile(5, Icons.settings, 'Bookings'),
-          _buildHoverableListTile(6, Icons.logout, 'Vehicle'),
-          _buildHoverableListTile(7, Icons.logout, 'Employees'),
-          _buildHoverableListTile(8, Icons.logout, 'Inventory'),
-          _buildHoverableListTile(9, Icons.logout, 'Finance'),
-          _buildHoverableListTile(10, Icons.logout, 'Settings'),
+          _buildHoverableListTile(
+              5, Icons.library_books_outlined, 'Bookings', '/bookings'),
+          _buildHoverableListTile(
+              6, Icons.directions_car_outlined, 'Vehicle', '/vehicle'),
+          _buildHoverableListTile(
+              7, Icons.groups_outlined, 'Employees', '/employee'),
+          _buildHoverableListTile(
+              8, Icons.inventory_outlined, 'Inventory', '/inventory'),
+          _buildHoverableListTile(
+              9, Icons.payment_outlined, 'Finance', '/finance'),
+          _buildHoverableListTile(
+              10, Icons.settings_outlined, 'Settings', '/settings'),
+          _buildHoverableListTile(11, Icons.logout_outlined, 'Logout', '')
         ],
       ),
     );
@@ -97,7 +105,7 @@ class _SidebarState extends State<Sidebar> {
             child: Center(
               child: ListTile(
                 leading: Icon(
-                  Icons.person,
+                  Icons.person_outlined,
                   color: _hoveredIndex == 1 ? Colors.white : Color(0xFF4CAF4F),
                 ),
                 title: Row(
@@ -115,25 +123,43 @@ class _SidebarState extends State<Sidebar> {
                         ),
                       ),
                     ),
-                    Icon(
-                      _isUsersExpanded ? Icons.expand_less : Icons.expand_more,
-                      color:
-                          _hoveredIndex == 1 ? Colors.white : Color(0xFF4CAF4F),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isUsersExpanded =
+                              !_isUsersExpanded; // Toggle dropdown
+                        });
+                      },
+                      child: Container(
+                        height: 60, // Adjust height as needed
+                        width: 60, // Adjust width as needed
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Icon(
+                            _isUsersExpanded
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            color: _hoveredIndex == 1
+                                ? Colors.white
+                                : Color(0xFF4CAF4F),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 onTap: () {
-                  setState(() {
-                    _isUsersExpanded = !_isUsersExpanded; // Toggle dropdown
-                  });
+                  Navigator.pushReplacementNamed(context, '/users');
                 },
               ),
             ),
           ),
         ),
         if (_isUsersExpanded) ...[
-          _buildsecondHoverableListTile(2, Icons.account_circle, 'My Account'),
-          _buildsecondHoverableListTile(3, Icons.lock, 'Security'),
+          _buildsecondHoverableListTile(
+              2, Icons.house_outlined, 'Households', '/userhouse'),
+          _buildsecondHoverableListTile(
+              3, Icons.business_center_outlined, 'Business', '/userbusiness'),
         ],
       ],
     );
@@ -171,7 +197,7 @@ class _SidebarState extends State<Sidebar> {
                 ),
               ),
               onTap: () {
-                Navigator.pushNamed(context, route);
+                Navigator.pushReplacementNamed(context, route);
               },
             ),
           ),
