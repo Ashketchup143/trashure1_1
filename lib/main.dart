@@ -10,12 +10,15 @@ import 'package:trashure1_1/screens/userbusiness.dart';
 import 'package:trashure1_1/screens/userhouse.dart';
 import 'package:trashure1_1/screens/users.dart';
 import 'package:trashure1_1/screens/vehicle.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'firebase_options.dart';
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(
-  //   options: kIsWeb ? firebaseConfig : null,
-  // );
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: kIsWeb ? firebaseConfig : null,
+  );
   runApp(MyApp());
 }
 
@@ -30,7 +33,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       debugShowCheckedModeBanner: false,
       routes: {
-        '/': (context) => Users(),
+        '/': (context) => Login(),
         '/login': (context) => Login(),
         '/dashboard': (context) => Dashboard(),
         '/users': (context) => Users(),

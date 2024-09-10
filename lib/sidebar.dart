@@ -1,7 +1,6 @@
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Authentication
 
 class Sidebar extends StatefulWidget {
   const Sidebar({super.key});
@@ -13,6 +12,33 @@ class Sidebar extends StatefulWidget {
 class _SidebarState extends State<Sidebar> {
   int _hoveredIndex = -1; // To track the hovered tile
   bool _isUsersExpanded = false; // To track if the Users dropdown is expanded
+
+  // Function to handle user logout
+  Future<void> _handleLogout() async {
+    try {
+      await FirebaseAuth.instance.signOut(); // Sign out from Firebase
+
+      // Show a SnackBar notification for successful logout
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You have successfully logged out.'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate to the login screen after logout with a slight delay to allow the SnackBar to be visible
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pushReplacementNamed(
+            context, '/login'); // Replace '/login' with your login route
+      });
+    } catch (e) {
+      print('Error signing out: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +111,9 @@ class _SidebarState extends State<Sidebar> {
               9, Icons.payment_outlined, 'Finance', '/finance'),
           _buildHoverableListTile(
               10, Icons.settings_outlined, 'Settings', '/settings'),
-          _buildHoverableListTile(11, Icons.logout_outlined, 'Logout', '')
+          // Logout tile with logout function
+          _buildHoverableListTile(11, Icons.logout_outlined, 'Logout', '',
+              onTap: _handleLogout),
         ],
       ),
     );
@@ -206,8 +234,10 @@ class _SidebarState extends State<Sidebar> {
     );
   }
 
+  // Updated method with an optional onTap callback
   Widget _buildHoverableListTile(
-      int index, IconData icon, String title, String route) {
+      int index, IconData icon, String title, String route,
+      {VoidCallback? onTap}) {
     return MouseRegion(
       onEnter: (_) => setState(() => _hoveredIndex = index),
       onExit: (_) => setState(() => _hoveredIndex = -1),
@@ -233,10 +263,12 @@ class _SidebarState extends State<Sidebar> {
                 ),
               ),
             ),
-            onTap: () {
-              Navigator.pushReplacementNamed(context, route);
-              // Handle navigation or other actions here
-            },
+            onTap: onTap ??
+                () {
+                  if (route.isNotEmpty) {
+                    Navigator.pushReplacementNamed(context, route);
+                  }
+                },
           ),
         ),
       ),
