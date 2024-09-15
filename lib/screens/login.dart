@@ -1,6 +1,5 @@
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -13,6 +12,31 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance; // FirebaseAuth instance
+
+  String _errorMessage = '';
+
+  // Function to handle login
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        // Sign in with email and password
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        print('User signed in: ${userCredential.user!.email}');
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _errorMessage = e.message ?? 'An error occurred';
+        });
+        print('Error: $e');
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
@@ -75,18 +99,18 @@ class _LoginState extends State<Login> {
                       ),
                       SizedBox(height: 24.0),
                       ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            // Handle login logic here
-                            print('Email: ${_emailController.text}');
-                            print('Password: ${_passwordController.text}');
-                          }
-                        },
+                        onPressed: _login,
                         style: ElevatedButton.styleFrom(
                             // Color from Trashure palette
                             ),
                         child: Text('Login'),
                       ),
+                      SizedBox(height: 16.0),
+                      if (_errorMessage.isNotEmpty)
+                        Text(
+                          _errorMessage,
+                          style: TextStyle(color: Colors.red),
+                        ),
                     ],
                   ),
                 ),
