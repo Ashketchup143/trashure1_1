@@ -134,9 +134,44 @@ class _VehicleState extends State<Vehicle> {
                                   'Add Vehicle',
                                   style: GoogleFonts.roboto(
                                       textStyle: TextStyle(
-                                          fontWeight: FontWeight.w300)),
+                                          fontWeight: FontWeight.w300,
+                                          color: Colors.white)),
                                 ),
-                                Icon(Icons.add),
+                                Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              _assignDriverToVehicle();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF0062FF),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30)),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(width: 8),
+                                Text(
+                                  'Assign Driver',
+                                  style: GoogleFonts.roboto(
+                                      textStyle: TextStyle(
+                                          fontWeight: FontWeight.w300,
+                                          color: Colors.white)),
+                                ),
+                                Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
                               ],
                             ),
                           ),
@@ -222,15 +257,34 @@ class _VehicleState extends State<Vehicle> {
               flex: 2,
               child: Text(vehicleId,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-          Expanded(flex: 1, child: Text(vehicle['brand'] ?? 'N/A')),
-          Expanded(flex: 1, child: Text(vehicle['vehicle_type'] ?? 'N/A')),
-          Expanded(flex: 1, child: Text(vehicle['model'] ?? 'N/A')),
-          Expanded(
-              flex: 1, child: Text(vehicle['license_plate_number'] ?? 'N/A')),
-          Expanded(flex: 2, child: Text(vehicle['assigned_driver'] ?? 'N/A')),
           Expanded(
               flex: 1,
-              child: Text(vehicle['weight_limit'].toString() ?? 'N/A')),
+              child: Text(
+                vehicle['brand'] ?? 'N/A',
+                style: TextStyle(fontSize: 16),
+              )),
+          Expanded(
+              flex: 1,
+              child: Text(
+                vehicle['vehicle_type'] ?? 'N/A',
+                style: TextStyle(fontSize: 16),
+              )),
+          Expanded(
+              flex: 1,
+              child: Text(vehicle['model'] ?? 'N/A',
+                  style: TextStyle(fontSize: 16))),
+          Expanded(
+              flex: 1,
+              child: Text(vehicle['license_plate_number'] ?? 'N/A',
+                  style: TextStyle(fontSize: 16))),
+          Expanded(
+              flex: 2,
+              child: Text(vehicle['assigned_driver'] ?? 'N/A',
+                  style: TextStyle(fontSize: 16))),
+          Expanded(
+              flex: 1,
+              child: Text(vehicle['weight_limit'].toString() ?? 'N/A',
+                  style: TextStyle(fontSize: 16))),
           Expanded(
             flex: 1,
             child: IconButton(
@@ -240,7 +294,7 @@ class _VehicleState extends State<Vehicle> {
                 Navigator.pushNamed(
                   context,
                   '/vehicleinformation',
-                  arguments: vehicle, // Passing the vehicle data as arguments
+                  arguments: vehicle,
                 );
               },
             ),
@@ -248,138 +302,95 @@ class _VehicleState extends State<Vehicle> {
         ],
       ),
       controlAffinity: ListTileControlAffinity.leading,
+      dense: true,
+      selectedTileColor: Colors.grey[200],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
     );
   }
 
-  void _showAddVehicleDialog(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
+  void _assignDriverToVehicle() async {
+    String? selectedVehicleId;
+    for (var entry in _selectedOptions.entries) {
+      if (entry.value == true) {
+        selectedVehicleId = entry.key;
+        break;
+      }
+    }
 
-    // Controllers for text fields
-    TextEditingController assignedDriverController = TextEditingController();
-    TextEditingController brandController = TextEditingController();
-    TextEditingController colorController = TextEditingController();
-    TextEditingController fuelTypeController = TextEditingController();
-    TextEditingController licensePlateController = TextEditingController();
-    TextEditingController modelController = TextEditingController();
-    TextEditingController vehicleTypeController = TextEditingController();
-    TextEditingController weightLimitController = TextEditingController();
+    if (selectedVehicleId == null) {
+      // Show a message if no vehicle is selected
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('No Vehicle Selected'),
+            content: Text('Please select a vehicle to assign a driver.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
 
-    // Optional fields
-    TextEditingController lastServiceDateController = TextEditingController();
-    TextEditingController nextScheduledMaintenanceController =
-        TextEditingController();
-    TextEditingController purchaseDateController = TextEditingController();
-    TextEditingController registrationExpireDateController =
-        TextEditingController();
-    TextEditingController registrationNumberController =
-        TextEditingController();
-    TextEditingController yearOfManufactureController = TextEditingController();
+    // Fetch drivers
+    List<Map<String, dynamic>> drivers = await _fetchDrivers();
 
+    // Show dialog to select a driver
+    // Show dialog to select a driver
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Vehicle'),
-          content: Form(
-            key: _formKey,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.55,
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    buildTextFormField('Brand', brandController, true),
-                    buildTextFormField('Color', colorController, true),
-                    buildTextFormField('Fuel Type', fuelTypeController, true),
-                    buildTextFormField(
-                        'License Plate Number', licensePlateController, true),
-                    buildTextFormField('Model', modelController, true),
-                    buildTextFormField(
-                        'Vehicle Type', vehicleTypeController, true),
-                    buildTextFormField(
-                        'Weight Limit', weightLimitController, true,
-                        isNumeric: true),
+      builder: (context) {
+        String? selectedDriverId;
+        String? selectedDriverName;
 
-                    // Optional fields
-                    buildTextFormField('Assigned Driver (optional)',
-                        assignedDriverController, false),
-                    buildTextFormField('Last Service Date (optional)',
-                        lastServiceDateController, false),
-                    buildTextFormField('Next Scheduled Maintenance (optional)',
-                        nextScheduledMaintenanceController, false),
-                    buildTextFormField('Purchase Date (optional)',
-                        purchaseDateController, false),
-                    buildTextFormField('Registration Expire Date (optional)',
-                        registrationExpireDateController, false),
-                    buildTextFormField('Registration Number (optional)',
-                        registrationNumberController, false),
-                    buildTextFormField('Year of Manufacture (optional)',
-                        yearOfManufactureController, false),
-                  ],
-                ),
+        return AlertDialog(
+          title: Text('Assign Driver'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<String>(
+                value: selectedDriverId,
+                hint: Text('Select a driver'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedDriverId = newValue;
+                    // Find the driver's name from the list
+                    selectedDriverName = drivers.firstWhere(
+                        (driver) => driver['id'] == selectedDriverId)['name'];
+                  });
+                },
+                items: drivers.map<DropdownMenuItem<String>>((driver) {
+                  return DropdownMenuItem<String>(
+                    value: driver['id'], // Use driver ID as the value
+                    child:
+                        Text(driver['name'] ?? 'N/A'), // Display driver's name
+                  );
+                }).toList(),
               ),
-            ),
+            ],
           ),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
               child: Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  Map<String, dynamic> vehicleData = {
-                    'assigned_driver': assignedDriverController.text,
-                    'brand': brandController.text,
-                    'color': colorController.text,
-                    'fuel_type': fuelTypeController.text,
-                    'license_plate_number': licensePlateController.text,
-                    'model': modelController.text,
-                    'vehicle_type': vehicleTypeController.text,
-                    'weight_limit': double.parse(weightLimitController.text),
-
-                    // Optional fields
-                    'last_service_date':
-                        lastServiceDateController.text.isNotEmpty
-                            ? lastServiceDateController.text
-                            : "",
-                    'next_scheduled_maintenance':
-                        nextScheduledMaintenanceController.text.isNotEmpty
-                            ? nextScheduledMaintenanceController.text
-                            : "",
-                    'purchase_date': purchaseDateController.text.isNotEmpty
-                        ? purchaseDateController.text
-                        : "",
-                    'registration_expire_date':
-                        registrationExpireDateController.text.isNotEmpty
-                            ? registrationExpireDateController.text
-                            : "",
-                    'registration_number':
-                        registrationNumberController.text.isNotEmpty
-                            ? registrationNumberController.text
-                            : "",
-                    'year_of_manufacture':
-                        yearOfManufactureController.text.isNotEmpty
-                            ? yearOfManufactureController.text
-                            : "",
-                  };
-
-                  // Add to Firestore
-                  await FirebaseFirestore.instance
-                      .collection('vehicles')
-                      .add(vehicleData);
-
-                  // Refresh the list of vehicles
-                  fetchVehicles();
-
-                  // Close the dialog
-                  Navigator.of(context).pop();
+            TextButton(
+              onPressed: () {
+                if (selectedDriverId != null && selectedDriverName != null) {
+                  // Assign the driver to the vehicle (use driver's name)
+                  _updateVehicleWithDriver(
+                      selectedVehicleId!, selectedDriverName!);
+                  Navigator.pop(context);
                 }
               },
-              child: Text('Add Vehicle'),
+              child: Text('Assign'),
             ),
           ],
         );
@@ -387,24 +398,34 @@ class _VehicleState extends State<Vehicle> {
     );
   }
 
-  Widget buildTextFormField(
-      String labelText, TextEditingController controller, bool isRequired,
-      {bool isNumeric = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-        validator: (value) {
-          if (isRequired && (value == null || value.isEmpty)) {
-            return 'Please enter $labelText';
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          labelText: labelText,
-        ),
-      ),
-    );
+  Future<List<Map<String, dynamic>>> _fetchDrivers() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('employees')
+        .where('position', isEqualTo: 'Driver')
+        .get();
+
+    return snapshot.docs.map((doc) {
+      Map<String, dynamic> driverData = doc.data() as Map<String, dynamic>;
+      driverData['id'] = doc.id; // Include document ID
+      driverData['name'] =
+          driverData['name'] ?? 'N/A'; // Ensure driver's name is included
+      return driverData;
+    }).toList();
+  }
+
+  void _updateVehicleWithDriver(
+      String vehicleId, String selectedDriverName) async {
+    // Update the vehicle document in Firestore with the assigned driver's name
+    await FirebaseFirestore.instance
+        .collection('vehicles')
+        .doc(vehicleId)
+        .update({'assigned_driver': selectedDriverName});
+
+    // Refresh the vehicle list
+    fetchVehicles();
+  }
+
+  Future<void> _showAddVehicleDialog(BuildContext context) async {
+    // Implement this function to show a dialog for adding a vehicle
   }
 }

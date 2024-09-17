@@ -450,6 +450,8 @@ class _EmployeesState extends State<Employees> {
               child: Text('Add Employee'),
             ),
             ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF4F)),
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
