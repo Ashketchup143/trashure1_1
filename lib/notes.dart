@@ -22,6 +22,111 @@ class MyWidget extends StatelessWidget {
   }
 }
 
+//custom checkbox with color
+
+// Widget _buildCustomCheckboxTile(
+//     String option,
+//     String name,
+//     String address,
+//     String dateBooked,
+//     String totalWeight,
+//     String type,
+//     String status,
+//   ) {
+//     // Determine the color based on the status
+//     Color statusColor;
+//     switch (status.toLowerCase()) {
+//       case 'booked':
+//         statusColor = Color.fromARGB(255, 66, 167, 250);
+//         break;
+//       case 'completed':
+//         statusColor = Color.fromARGB(255, 76, 181, 80);
+//         break;
+//       case 'in progress':
+//         statusColor = Colors.grey;
+//         break;
+//       case 'delayed':
+//         statusColor = Color.fromARGB(255, 249, 81, 70);
+//         break;
+//       case 'unbooked':
+//         statusColor = Color(0xFFF5D322);
+//         break;
+//       default:
+//         statusColor =
+//             Color.fromARGB(255, 150, 141, 61); // Default color if no match
+//     }
+
+//     return CheckboxListTile(
+//       value: _selectedOptions[option],
+//       activeColor: Colors.green, // Turns green when checked
+//       onChanged: (bool? value) {
+//         setState(() {
+//           _selectedOptions[option] = value!;
+//         });
+//       },
+//       title: Row(
+//         children: [
+//           Expanded(
+//             flex: 2,
+//             child: Text(
+//               name,
+//               style: TextStyle(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: 16,
+//               ),
+//             ),
+//           ),
+//           Expanded(
+//             flex: 2,
+//             child: Text(address),
+//           ),
+//           Expanded(
+//             flex: 1,
+//             child: Text(dateBooked),
+//           ),
+//           Expanded(
+//             flex: 1,
+//             child: Text(totalWeight),
+//           ),
+//           Expanded(
+//             flex: 1,
+//             child: Text(type),
+//           ),
+//           Expanded(
+//             flex: 1,
+//             child: Container(
+//               height: 22.5,
+//               width: 20,
+//               decoration: BoxDecoration(
+//                 color: statusColor,
+//                 borderRadius: BorderRadius.all(Radius.circular(25)),
+//                 boxShadow: [
+//                   BoxShadow(
+//                     color: Colors.black.withOpacity(0.2), // Shadow color
+//                     offset: Offset(0, 1), // changes position of shadow (x, y)
+//                   ),
+//                 ],
+//               ),
+//               child: Center(
+//                 child: Text(
+//                   status,
+//                   style: TextStyle(color: Colors.white),
+//                 ),
+//               ),
+//             ),
+//           ),
+//           Expanded(
+//             flex: 1,
+//             child: Icon(Icons.info_outline),
+//           ),
+//         ],
+//       ),
+//       controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
+//     );
+//   }
+// }
+
+
 //if need dynamically
 
 // import 'package:flutter/material.dart';

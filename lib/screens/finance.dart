@@ -15,16 +15,12 @@ class _FinanceState extends State<Finance> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: Row(
-            children: [
-              Sidebar(),
-              // SizedBox(
-              //   width: 50,
-              // ),
-              Expanded(
+      drawer: Sidebar(),
+      body: Builder(
+          builder: (context) => Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
                   child: Container(
@@ -33,14 +29,27 @@ class _FinanceState extends State<Finance> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: 30,
+                          height: 5,
                         ),
-                        Text(
-                          'Finance',
-                          textAlign: TextAlign.left,
-                          style: GoogleFonts.poppins(
-                              textStyle: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20)),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.menu,
+                                  color: Colors.green, size: 25),
+                              onPressed: () {
+                                Scaffold.of(context)
+                                    .openDrawer(); // Opens the drawer
+                              },
+                            ),
+                            Text(
+                              'Finance',
+                              textAlign: TextAlign.left,
+                              style: GoogleFonts.poppins(
+                                  textStyle: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20)),
+                            ),
+                          ],
                         ),
                         Row(
                           children: [
@@ -148,9 +157,7 @@ class _FinanceState extends State<Finance> {
                     ),
                   ),
                 ),
-              )
-            ],
-          )),
+              ))),
     );
   }
 

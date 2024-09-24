@@ -60,169 +60,180 @@ class _EmployeesState extends State<Employees> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Row(
-          children: [
-            Sidebar(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 30),
-                      Text(
-                        'Employees',
-                        textAlign: TextAlign.left,
-                        style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
-                      ),
-                      SizedBox(height: 20),
-                      // Search bar
-                      Row(
+      drawer: Sidebar(),
+      body: Builder(
+          builder: (context) => Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                child: Expanded(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(top: 20, left: 40, right: 40),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            height: 30,
-                            width: 430,
-                            decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(17.5),
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText:
-                                    'Search by employee name, id, or position',
-                                border: InputBorder.none,
-                                prefixIcon: Icon(Icons.search),
+                          SizedBox(height: 5),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.menu,
+                                    color: Colors.green, size: 25),
+                                onPressed: () {
+                                  Scaffold.of(context)
+                                      .openDrawer(); // Opens the drawer
+                                },
                               ),
-                              onChanged: (value) {
-                                _onSearchChanged();
-                              },
-                            ),
+                              Text(
+                                'Employees',
+                                textAlign: TextAlign.left,
+                                style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20)),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 20),
-                          ElevatedButton(
-                            onPressed: () {
-                              _addEmployee(); // Call add employee function
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF4CAF4F),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30)),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              textStyle: TextStyle(fontSize: 16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(width: 8),
-                                Text(
-                                  'Add Employee',
-                                  style: GoogleFonts.roboto(
-                                      textStyle: TextStyle(
-                                          fontWeight: FontWeight.w300)),
+                          SizedBox(height: 20),
+                          // Search bar
+                          Row(
+                            children: [
+                              Container(
+                                height: 30,
+                                width: 430,
+                                decoration: BoxDecoration(
+                                  border: Border.all(),
+                                  borderRadius: BorderRadius.circular(17.5),
                                 ),
-                                Icon(Icons.add),
-                              ],
-                            ),
+                                child: TextField(
+                                  controller: _searchController,
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Search by employee name, id, or position',
+                                    border: InputBorder.none,
+                                    prefixIcon: Icon(Icons.search),
+                                  ),
+                                  onChanged: (value) {
+                                    _onSearchChanged();
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _addEmployee(); // Call add employee function
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFF4CAF4F),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30)),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  textStyle: TextStyle(fontSize: 16),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Add Employee',
+                                      style: GoogleFonts.roboto(
+                                          textStyle: TextStyle(
+                                              fontWeight: FontWeight.w300)),
+                                    ),
+                                    Icon(Icons.add),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Handle payroll action
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFF0062FF),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30)),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  textStyle: TextStyle(fontSize: 16),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Payroll',
+                                      style: GoogleFonts.roboto(
+                                          textStyle: TextStyle(
+                                              fontWeight: FontWeight.w300)),
+                                    ),
+                                    Icon(
+                                      Icons.receipt_long_outlined,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 20),
-                          ElevatedButton(
-                            onPressed: () {
-                              // Handle payroll action
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF0062FF),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30)),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              textStyle: TextStyle(fontSize: 16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                          SizedBox(height: 20),
+                          Container(
+                            height: MediaQuery.of(context).size.height * .8,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(border: Border.all()),
+                            child: Column(
                               children: [
-                                SizedBox(width: 8),
-                                Text(
-                                  'Payroll',
-                                  style: GoogleFonts.roboto(
-                                      textStyle: TextStyle(
-                                          fontWeight: FontWeight.w300)),
+                                // Title row
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      title('Employee ID', 3),
+                                      title('Name', 3),
+                                      title('Position', 3),
+                                      title('Exp. Time In', 3),
+                                      title('Exp. Time Out', 3),
+                                      title('Attendance', 3),
+                                      title('Details', 2),
+                                    ],
+                                  ),
                                 ),
-                                Icon(
-                                  Icons.receipt_long_outlined,
-                                  size: 20,
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: _filteredEmployees.length,
+                                    itemBuilder: (context, index) {
+                                      var employee = _filteredEmployees[index];
+                                      var employeeid = employee['id'];
+                                      var name = employee['name'];
+                                      var position = employee['position'];
+                                      var expTimeIn = employee['exp_time_in'];
+                                      var expTimeOut = employee['exp_time_out'];
+
+                                      _selectedOptions[employeeid] ??= false;
+                                      _attendanceStatus[employeeid] ??= false;
+
+                                      return _buildCustomCheckboxTile(
+                                        employeeid,
+                                        employeeid,
+                                        name,
+                                        position,
+                                        expTimeIn,
+                                        expTimeOut,
+                                        employee,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 20),
-                      Container(
-                        height: MediaQuery.of(context).size.height * .8,
-                        width: MediaQuery.of(context).size.width,
-                        decoration: BoxDecoration(border: Border.all()),
-                        child: Column(
-                          children: [
-                            // Title row
-                            Container(
-                              child: Row(
-                                children: [
-                                  title('Employee ID', 3),
-                                  title('Name', 3),
-                                  title('Position', 3),
-                                  title('Exp. Time In', 3),
-                                  title('Exp. Time Out', 3),
-                                  title('Attendance', 3),
-                                  title('Details', 2),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: _filteredEmployees.length,
-                                itemBuilder: (context, index) {
-                                  var employee = _filteredEmployees[index];
-                                  var employeeid = employee['id'];
-                                  var name = employee['name'];
-                                  var position = employee['position'];
-                                  var expTimeIn = employee['exp_time_in'];
-                                  var expTimeOut = employee['exp_time_out'];
-
-                                  _selectedOptions[employeeid] ??= false;
-                                  _attendanceStatus[employeeid] ??= false;
-
-                                  return _buildCustomCheckboxTile(
-                                    employeeid,
-                                    employeeid,
-                                    name,
-                                    position,
-                                    expTimeIn,
-                                    expTimeOut,
-                                    employee,
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
+              )),
     );
   }
 

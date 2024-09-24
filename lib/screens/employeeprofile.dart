@@ -19,12 +19,13 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   late TextEditingController _expTimeOutController;
 
   bool _isLoading = false;
-  Map<String, dynamic>? employee; // Make employee nullable initially
+  bool _isEditing = false;
+  Map<String, dynamic>? employee;
+  Map<String, dynamic>? originalEmployeeData;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with empty values initially
     _nameController = TextEditingController();
     _positionController = TextEditingController();
     _addressController = TextEditingController();
@@ -39,13 +40,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Access ModalRoute arguments in didChangeDependencies, which is safe
     if (employee == null) {
       employee =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
       if (employee != null) {
+        // Save the original data for comparison
+        originalEmployeeData = Map<String, dynamic>.from(employee!);
+
         // Set initial values of the controllers with the employee data
         _nameController.text = employee!['name'];
         _positionController.text = employee!['position'];
@@ -60,8 +62,34 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     }
   }
 
-  // Save updated employee information to Firestore
-  void _updateEmployee(String employeeId) async {
+  // Toggle the edit mode
+  void _toggleEdit() {
+    setState(() {
+      _isEditing = !_isEditing;
+    });
+  }
+
+  // Compare values to determine if data has changed
+  bool _hasChanged() {
+    return _nameController.text != originalEmployeeData!['name'] ||
+        _positionController.text != originalEmployeeData!['position'] ||
+        _addressController.text != originalEmployeeData!['address'] ||
+        _birthDateController.text != originalEmployeeData!['birth_date'] ||
+        _contactController.text != originalEmployeeData!['contact_number'] ||
+        _emailController.text != originalEmployeeData!['email_address'] ||
+        _salaryController.text != originalEmployeeData!['salary_per_hour'] ||
+        _expTimeInController.text != originalEmployeeData!['exp_time_in'] ||
+        _expTimeOutController.text != originalEmployeeData!['exp_time_out'];
+  }
+
+  // Save updated employee information to Firestore if data has changed
+  void _saveChanges(String employeeId) async {
+    if (!_hasChanged()) {
+      _showDialog('No changes', 'No information has been changed.');
+      _isEditing = false;
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -82,41 +110,24 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         'exp_time_out': _expTimeOutController.text,
       });
 
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Success'),
-            content: Text('Employee information has been updated.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      _showDialog('Success', 'Employee information has been updated.');
+      setState(() {
+        _isEditing = false;
+        // Update original data to reflect the latest changes
+        originalEmployeeData = {
+          'name': _nameController.text,
+          'position': _positionController.text,
+          'address': _addressController.text,
+          'birth_date': _birthDateController.text,
+          'contact_number': _contactController.text,
+          'email_address': _emailController.text,
+          'salary_per_hour': _salaryController.text,
+          'exp_time_in': _expTimeInController.text,
+          'exp_time_out': _expTimeOutController.text,
+        };
+      });
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to update employee information.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      _showDialog('Error', 'Failed to update employee information.');
     } finally {
       setState(() {
         _isLoading = false;
@@ -124,12 +135,49 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     }
   }
 
+  // Display dialog
+  void _showDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Employee Profile', style: GoogleFonts.poppins()),
+        title: Text(
+          'Employee Profile',
+          style: GoogleFonts.poppins(textStyle: TextStyle(color: Colors.white)),
+        ),
         backgroundColor: Colors.green,
+        actions: [
+          if (employee != null)
+            IconButton(
+              icon: Icon(_isEditing ? Icons.save : Icons.edit),
+              onPressed: () {
+                if (_isEditing && employee != null) {
+                  _saveChanges(employee!['id']);
+                } else {
+                  _toggleEdit();
+                }
+              },
+            ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -181,25 +229,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                               controller: _expTimeOutController),
                         ],
                       ),
-                    SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (employee != null) {
-                            _updateEmployee(employee!['id']);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30)),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          textStyle: TextStyle(fontSize: 16),
-                        ),
-                        child: Text('Save Changes'),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -227,7 +256,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         ),
         Expanded(
           flex: 2,
-          child: isEditable
+          child: _isEditing && isEditable
               ? TextField(
                   controller: controller,
                   style: GoogleFonts.poppins(

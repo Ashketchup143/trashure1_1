@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:trashure1_1/user_model.dart'; // Import the user model
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -12,26 +14,28 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance; // FirebaseAuth instance
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   String _errorMessage = '';
 
-  // Function to handle login
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Sign in with email and password
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        print('User signed in: ${userCredential.user!.email}');
+
+        // Set the user's name or email in UserModel
+        String userName =
+            userCredential.user!.displayName ?? userCredential.user!.email!;
+        Provider.of<UserModel>(context, listen: false).setUserName(userName);
+
         Navigator.pushReplacementNamed(context, '/dashboard');
       } on FirebaseAuthException catch (e) {
         setState(() {
           _errorMessage = e.message ?? 'An error occurred';
         });
-        print('Error: $e');
       }
     }
   }

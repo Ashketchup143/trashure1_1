@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Authentication
+import 'package:provider/provider.dart';
+import 'package:trashure1_1/user_model.dart';
 
 class Sidebar extends StatefulWidget {
   const Sidebar({super.key});
@@ -42,23 +44,25 @@ class _SidebarState extends State<Sidebar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final userName =
+        Provider.of<UserModel>(context).userName; // Get the user's name
+    return Drawer(
       width: 250,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          bottomRight: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            color: Color.fromARGB(255, 109, 108, 108),
-            blurStyle: BlurStyle.normal,
-            offset: Offset.zero,
-          ),
-        ],
-      ),
+      // decoration: BoxDecoration(
+      //   borderRadius: BorderRadius.only(
+      //     bottomRight: Radius.circular(15),
+      //     topRight: Radius.circular(15),
+      //   ),
+      //   color: Colors.white,
+      //   boxShadow: [
+      //     BoxShadow(
+      //       blurRadius: 10,
+      //       color: Color.fromARGB(255, 109, 108, 108),
+      //       blurStyle: BlurStyle.normal,
+      //       offset: Offset.zero,
+      //     ),
+      //   ],
+      // ),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -79,11 +83,11 @@ class _SidebarState extends State<Sidebar> {
                 SizedBox(height: 8),
                 CircleAvatar(
                   radius: 60,
-                  backgroundImage: AssetImage('assets/unnamed.jpg'),
+                  backgroundImage: AssetImage('assets/ash.jpg'),
                 ),
                 SizedBox(height: 15),
                 Text(
-                  'Kristine Gallawan',
+                  userName,
                   style: GoogleFonts.poppins(),
                 ),
                 SizedBox(height: 20),
@@ -126,7 +130,7 @@ class _SidebarState extends State<Sidebar> {
           onEnter: (_) => setState(() => _hoveredIndex = 1),
           onExit: (_) => setState(() => _hoveredIndex = -1),
           child: Container(
-            height: 65,
+            height: 70,
             color: _hoveredIndex == 1
                 ? Color(0xFF4CAF4F)
                 : Colors.transparent, // Changes color on hover

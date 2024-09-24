@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:trashure1_1/sidebar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UserBusiness extends StatefulWidget {
@@ -12,164 +13,274 @@ class UserBusiness extends StatefulWidget {
 }
 
 class _UserBusinessState extends State<UserBusiness> {
+  List<Map<String, dynamic>> _usersList = []; // Store user data locally
+  List<Map<String, dynamic>> _filteredUsers = []; // Store filtered data
+  Map<String, bool> _selectedOptions = {}; // Checkbox states
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  // Fetch user data from Firestore and put it in _usersList
+  Future<void> _fetchUsers() async {
+    final snapshot = await FirebaseFirestore.instance.collection('users').get();
+    List<Map<String, dynamic>> userList = snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        'name': doc['name'],
+        'category': doc['category'],
+        'contact': doc['contact'],
+        'address': doc['address'],
+        'uid': doc['uid'],
+        'status': doc['status'] ??
+            'unbooked' // Default to 'unbooked' if status is empty or null
+      };
+    }).toList();
+
+    setState(() {
+      _usersList = userList
+          .where((user) => user['category'] == 'business/organization')
+          .toList();
+      _filteredUsers =
+          _usersList; // Initialize filtered list with business users
+    });
+  }
+
+  // Function to handle search changes
+  void _onSearchChanged() {
+    String searchTerm = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredUsers = _usersList.where((user) {
+        return user['name'].toLowerCase().contains(searchTerm) ||
+            user['contact'].toLowerCase().contains(searchTerm) ||
+            user['address'].toLowerCase().contains(searchTerm) ||
+            user['uid'].toLowerCase().contains(searchTerm) ||
+            user['status'].toLowerCase().contains(searchTerm);
+      }).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      drawer: Sidebar(),
+      body: Builder(
+        builder: (context) => Container(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
-          child: Row(
-            children: [
-              Sidebar(),
-              // SizedBox(
-              //   width: 50,
-              // ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.menu, color: Colors.green, size: 25),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer(); // Opens the drawer
+                      },
+                    ),
+                    Text(
+                      'Business Users',
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                // Search Bar
+                Row(
+                  children: [
+                    Container(
+                      height: 30,
+                      width: 430,
+                      decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(17.5),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText:
+                              'Search by user name, contact, address, uid, or status',
+                          border: InputBorder.none,
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                        onChanged: (value) {
+                          _onSearchChanged();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Expanded(
                   child: Container(
-                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(border: Border.all()),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 30,
-                        ),
-                        Text(
-                          'Business and Organizations',
-                          textAlign: TextAlign.left,
-                          style: GoogleFonts.poppins(
-                              textStyle: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20)),
-                        ),
                         Row(
                           children: [
-                            Container(
-                              height: 30,
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  // top: BorderSide(),
-                                  // bottom: BorderSide(),
-                                  // left: BorderSide()),
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(17.5),
-                                      bottomLeft: Radius.circular(17.5))),
-                              child: IconButton(
-                                iconSize: 17,
-                                color: Color.fromARGB(255, 74, 73, 73),
-                                icon: Icon(Icons.search),
-                                onPressed: () {
-                                  // Handle button press
-                                },
-                                tooltip: 'Home',
-                              ),
-                            ),
-                            Container(
-                              height: 30,
-                              width: 400,
-                              decoration: BoxDecoration(
-                                  border: Border.all(),
-                                  // top: BorderSide(),
-                                  // bottom: BorderSide(),
-                                  // left: BorderSide()),
-
-                                  borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(17.5),
-                                      bottomRight: Radius.circular(17.5))),
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: 'Search',
-                                  border: InputBorder
-                                      .none, // Removes the default TextField border
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 20,
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                // Handle button press
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF4CAF4F),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8), // Button padding
-                                textStyle:
-                                    TextStyle(fontSize: 16), // Text style
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize
-                                    .min, // Keep the button size minimal
-                                children: [
-                                  SizedBox(
-                                      width: 8), // Space between icon and text
-                                  Text(
-                                    'Schedule Pick Up',
-                                    style: GoogleFonts.roboto(
-                                        textStyle: TextStyle(
-                                            fontWeight: FontWeight.w300)),
-                                  ), // The text
-                                  Icon(Icons.add), // The icon
-                                ],
-                              ),
-                            )
+                            title('Name', 2),
+                            title('Contact', 2),
+                            title('Address', 2),
+                            title('UID', 2),
+                            title('Status', 2),
+                            title('Details', 1),
                           ],
                         ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Container(
-                          height: MediaQuery.of(context).size.height * .825,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(border: Border.all()),
-                          child: Column(
-                            children: [
-                              Container(
-                                child: Row(
-                                  children: [
-                                    title('Name', 2),
-                                    title('Address', 2),
-                                    title('Date Booked', 1),
-                                    title('Est. Total Weight', 1),
-                                    title('Type', 1),
-                                    title('Status', 1),
-                                    title('Details', 1),
-                                  ],
-                                ),
-                              )
-                            ],
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: _filteredUsers.length,
+                            itemBuilder: (context, index) {
+                              final user = _filteredUsers[index];
+                              final uid = user['uid'];
+
+                              // Initialize checkbox state if not present
+                              _selectedOptions[uid] =
+                                  _selectedOptions[uid] ?? false;
+
+                              return _buildCustomCheckboxTile(
+                                uid,
+                                user['name'],
+                                user['contact'],
+                                user['address'],
+                                user['uid'],
+                                user['status'], // Use status from the list
+                              );
+                            },
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
                 ),
-              )
-            ],
-          )),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget title(String text, int fl) {
+  // Adjusted title widget
+  Widget title(String text, int flex) {
     return Expanded(
-        flex: fl,
-        child: Container(
-          height: 20,
-          decoration: BoxDecoration(
-              border: Border(
+      flex: flex,
+      child: Container(
+        height: 30,
+        decoration: BoxDecoration(
+          border: Border(
             bottom: BorderSide(),
-          )),
-          child: Center(
-            child: Text(
-              text,
-              style: GoogleFonts.roboto(
-                  textStyle: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: GoogleFonts.roboto(
+              textStyle: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
+  }
+
+  // Function to determine status color based on status string
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'booked':
+        return Color.fromARGB(255, 66, 167, 250);
+      case 'completed':
+        return Color.fromARGB(255, 76, 181, 80);
+      case 'in progress':
+        return Colors.grey;
+      case 'delayed':
+        return Color.fromARGB(255, 249, 81, 70);
+      case 'unbooked':
+        return Color(0xFFF5D322);
+      default:
+        return Color.fromARGB(255, 150, 141, 61); // Default color if no match
+    }
+  }
+
+  // CheckboxListTile to display user details with status and icon for details
+  Widget _buildCustomCheckboxTile(
+    String uid,
+    String name,
+    String contact,
+    String address,
+    String userId,
+    String status,
+  ) {
+    // Ensure the status is never empty or null
+    String displayStatus = status.isEmpty ? 'unbooked' : status;
+
+    return CheckboxListTile(
+      value: _selectedOptions[uid],
+      activeColor: Colors.green, // Turns green when checked
+      onChanged: (bool? value) {
+        setState(() {
+          _selectedOptions[uid] = value!;
+        });
+      },
+      title: Row(
+        children: [
+          Expanded(
+              flex: 2,
+              child: Text(name, style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 2, child: Text(contact)),
+          Expanded(flex: 2, child: Text(address)),
+          Expanded(flex: 2, child: Text(userId)),
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 22.5,
+              width: 50,
+              decoration: BoxDecoration(
+                color: _getStatusColor(displayStatus),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  displayStatus,
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: IconButton(
+              icon: Icon(Icons.info_outline),
+              onPressed: () {
+                // Handle details icon tap
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Details tapped for $name')),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
+    );
   }
 }

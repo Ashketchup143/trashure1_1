@@ -11,26 +11,27 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  // Reference to the Firestore collection 'products'
   final CollectionReference _productsCollection =
       FirebaseFirestore.instance.collection('products');
+  final CollectionReference _categoryCollection =
+      FirebaseFirestore.instance.collection('category');
 
-  // Search Controller
   final TextEditingController _searchController = TextEditingController();
 
-  // State variables for storing products and search term
   List<DocumentSnapshot> _allProducts = [];
   List<DocumentSnapshot> _filteredProducts = [];
+  List<DocumentSnapshot> _allCategories = [];
   String _searchTerm = '';
+  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
     _fetchProducts();
+    _fetchCategories();
     _searchController.addListener(_onSearchChanged);
   }
 
-  // Function to fetch all products from Firestore
   Future<void> _fetchProducts() async {
     QuerySnapshot snapshot = await _productsCollection.get();
     setState(() {
@@ -39,7 +40,28 @@ class _SettingsState extends State<Settings> {
     });
   }
 
-  // Function to handle search input changes
+  Future<void> _fetchCategories() async {
+    QuerySnapshot snapshot = await _categoryCollection.get();
+    setState(() {
+      _allCategories = snapshot.docs;
+    });
+  }
+
+  // Fetch the latest price from the 'prices' subcollection
+  Future<double> _fetchLatestPrice(String productId) async {
+    QuerySnapshot priceSnapshot = await _productsCollection
+        .doc(productId)
+        .collection('prices')
+        .orderBy('time', descending: true)
+        .limit(1)
+        .get();
+
+    if (priceSnapshot.docs.isNotEmpty) {
+      return priceSnapshot.docs.first['price'] ?? 0.0;
+    }
+    return 0.0;
+  }
+
   void _onSearchChanged() {
     setState(() {
       _searchTerm = _searchController.text.trim().toLowerCase();
@@ -55,136 +77,204 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Row(
-          children: [
-            Sidebar(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 30),
-                    Text(
-                      'Settings',
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 20),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Container(
-                          height: 30,
-                          width: 430,
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(17.5),
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Search by product name or category',
-                              border: InputBorder.none,
-                              prefixIcon: Icon(Icons.search),
-                            ),
-                            onChanged: (value) {
-                              _onSearchChanged();
+      drawer: Sidebar(),
+      body: Builder(
+        builder: (context) => Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            children: [
+              Sidebar(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 5),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon:
+                                Icon(Icons.menu, color: Colors.green, size: 25),
+                            onPressed: () {
+                              Scaffold.of(context)
+                                  .openDrawer(); // Opens the drawer
                             },
                           ),
-                        ),
-                        SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            _showAddProductDialog(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF4CAF4F),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            textStyle: TextStyle(fontSize: 16),
+                          Text(
+                            'Settings',
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20),
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(width: 8),
-                              Text(
-                                'Add Product',
-                                style: GoogleFonts.roboto(
-                                    textStyle:
-                                        TextStyle(fontWeight: FontWeight.w300)),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Container(
+                            height: 30,
+                            width: 430,
+                            decoration: BoxDecoration(
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(17.5),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Search by product name or category',
+                                border: InputBorder.none,
+                                prefixIcon: Icon(Icons.search),
                               ),
-                              Icon(Icons.add),
+                              onChanged: (value) {
+                                _onSearchChanged();
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              _showAddProductDialog(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF4CAF4F),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30)),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(width: 8),
+                                Text(
+                                  'Add Product',
+                                  style: GoogleFonts.roboto(
+                                      textStyle: TextStyle(
+                                          fontWeight: FontWeight.w300,
+                                          color: Colors.white)),
+                                ),
+                                Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              _showAddCategoryDialog(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF0062FF),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30)),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(width: 8),
+                                Text(
+                                  'Add Category',
+                                  style: GoogleFonts.roboto(
+                                      textStyle: TextStyle(
+                                          fontWeight: FontWeight.w300,
+                                          color: Colors.white)),
+                                ),
+                                Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(border: Border.all()),
+                          child: Column(
+                            children: [
+                              Container(
+                                color: Colors.grey[300],
+                                child: Row(
+                                  children: [
+                                    _titleCell('Product Name', 3),
+                                    _titleCell('Category', 2),
+                                    _titleCell('Price', 2),
+                                    _titleCell('Details', 4),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: _filteredProducts.isEmpty
+                                    ? Center(child: Text('No products found'))
+                                    : ListView.builder(
+                                        itemCount: _filteredProducts.length,
+                                        itemBuilder: (context, index) {
+                                          var product =
+                                              _filteredProducts[index];
+                                          String productId = product.id;
+                                          String productName =
+                                              product['product_name'];
+                                          String category = product['category'];
+                                          String unit = product['unit'];
+                                          String details = product['details'];
+                                          String picture = product['picture'];
+
+                                          return FutureBuilder<double>(
+                                            future:
+                                                _fetchLatestPrice(productId),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return Center(
+                                                    child:
+                                                        CircularProgressIndicator());
+                                              }
+                                              if (snapshot.hasError) {
+                                                return Text(
+                                                    'Error fetching price');
+                                              }
+                                              double price =
+                                                  snapshot.data ?? 0.0;
+
+                                              return _buildProductTile(
+                                                  productId,
+                                                  productName,
+                                                  category,
+                                                  price,
+                                                  unit,
+                                                  details,
+                                                  picture);
+                                            },
+                                          );
+                                        },
+                                      ),
+                              ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(border: Border.all()),
-                        child: Column(
-                          children: [
-                            // Row with titles
-                            Container(
-                              color: Colors.grey[300],
-                              child: Row(
-                                children: [
-                                  _titleCell('Product Name', 3),
-                                  _titleCell('Category', 2),
-                                  _titleCell('Price', 2),
-                                  _titleCell('Details', 4),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: _filteredProducts.isEmpty
-                                  ? Center(child: Text('No products found'))
-                                  : ListView.builder(
-                                      itemCount: _filteredProducts.length,
-                                      itemBuilder: (context, index) {
-                                        var product = _filteredProducts[index];
-                                        String productId = product.id;
-                                        String productName =
-                                            product['product_name'];
-                                        String category = product['category'];
-                                        String price =
-                                            product['price'].toString();
-                                        String details = product['details'];
-                                        String picture = product['picture'];
-
-                                        return _buildProductTile(
-                                            productId,
-                                            productName,
-                                            category,
-                                            price,
-                                            details,
-                                            picture);
-                                      },
-                                    ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Custom widget to build a title cell
   Widget _titleCell(String title, int flex) {
     return Expanded(
       flex: flex,
@@ -205,7 +295,6 @@ class _SettingsState extends State<Settings> {
     );
   }
 
-  // Helper function to truncate the details text
   String _truncateDetails(String details, {int limit = 10}) {
     if (details.split(' ').length > limit) {
       return details.split(' ').take(limit).join(' ') + '...';
@@ -213,9 +302,14 @@ class _SettingsState extends State<Settings> {
     return details;
   }
 
-  // Custom widget to build a product tile with category, price, details, and picture
-  Widget _buildProductTile(String productId, String productName,
-      String category, String price, String details, String picture) {
+  Widget _buildProductTile(
+      String productId,
+      String productName,
+      String category,
+      double price,
+      String unit,
+      String details,
+      String picture) {
     return ListTile(
       leading: picture.isNotEmpty
           ? ClipOval(
@@ -237,20 +331,18 @@ class _SettingsState extends State<Settings> {
                   textStyle: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
-          Expanded(flex: 1, child: Container()), // Spacer between columns
+          Expanded(flex: 1, child: Container()),
           Expanded(
             flex: 2,
             child: Text(category),
           ),
           Expanded(
             flex: 2,
-            child: Text('Php${price}/kg'),
+            child: Text('Php${price}/${unit}'),
           ),
           Expanded(
             flex: 4,
-            child: Text(
-              _truncateDetails(details), // Truncate the details
-            ),
+            child: Text(_truncateDetails(details)),
           ),
         ],
       ),
@@ -262,7 +354,7 @@ class _SettingsState extends State<Settings> {
             icon: Icon(Icons.edit),
             onPressed: () {
               _showEditProductDialog(context, productId, productName, category,
-                  price, details, picture);
+                  price.toString(), unit, details, picture);
             },
           ),
           IconButton(
@@ -276,13 +368,204 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  // Function to show a dialog to add a new category
+  void _showAddCategoryDialog(BuildContext context) {
+    final TextEditingController categoryController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add New Category'),
+          content: TextField(
+            controller: categoryController,
+            decoration: InputDecoration(labelText: 'Category Name'),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF4CAF4F),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF4CAF4F),
+              ),
+              onPressed: () async {
+                String categoryName =
+                    categoryController.text.trim().toLowerCase();
+
+                if (categoryName.isNotEmpty) {
+                  // Add the new category to the 'category' collection
+                  await FirebaseFirestore.instance.collection('category').add({
+                    'category_name': categoryName,
+                  });
+                  // Refresh the product list or categories if needed
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Add Category'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Edit product dialog
+  void _showEditProductDialog(
+      BuildContext context,
+      String productId,
+      String productName,
+      String category,
+      String price,
+      String unit,
+      String details,
+      String picture) {
+    final TextEditingController productNameController =
+        TextEditingController(text: productName);
+    final TextEditingController priceController =
+        TextEditingController(text: price);
+    final TextEditingController detailsController =
+        TextEditingController(text: details);
+    final TextEditingController imageUrlController =
+        TextEditingController(text: picture);
+
+    String _selectedCategory = category; // Default category value
+    String _selectedUnit = unit; // Default unit value
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Product'),
+          content: SingleChildScrollView(
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.4,
+              width: MediaQuery.of(context).size.width * 0.4,
+              child: Column(
+                children: [
+                  TextField(
+                    controller: productNameController,
+                    decoration: InputDecoration(labelText: 'Product Name'),
+                  ),
+                  SizedBox(height: 10),
+                  // Dropdown for Category
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedCategory = newValue!;
+                      });
+                    },
+                    items: _allCategories.map((categoryDoc) {
+                      return DropdownMenuItem<String>(
+                        value: categoryDoc['category_name'],
+                        child: Text(categoryDoc['category_name']),
+                      );
+                    }).toList(),
+                    decoration: InputDecoration(labelText: 'Category'),
+                  ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: priceController,
+                    decoration: InputDecoration(labelText: 'Price'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SizedBox(height: 10),
+                  // Dropdown for Unit
+                  DropdownButtonFormField<String>(
+                    value: _selectedUnit,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedUnit = newValue!;
+                      });
+                    },
+                    items: ['kg', 'g', 'ton'].map((unit) {
+                      return DropdownMenuItem<String>(
+                        value: unit,
+                        child: Text(unit),
+                      );
+                    }).toList(),
+                    decoration: InputDecoration(labelText: 'Unit'),
+                  ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: detailsController,
+                    decoration: InputDecoration(labelText: 'Details'),
+                  ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: imageUrlController,
+                    decoration:
+                        InputDecoration(labelText: 'Image URL (Optional)'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF4F)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF4F)),
+              onPressed: () async {
+                String newProductName = productNameController.text.trim();
+                double newPrice =
+                    double.tryParse(priceController.text.trim()) ?? 0;
+                String newDetails = detailsController.text.trim();
+                String newImageUrl = imageUrlController.text.trim();
+
+                DocumentReference productRef =
+                    _productsCollection.doc(productId);
+
+                if (newProductName.isNotEmpty && _selectedCategory.isNotEmpty) {
+                  await productRef.update({
+                    'product_name': newProductName,
+                    'category': _selectedCategory, // Updated category
+                    'unit': _selectedUnit, // Updated unit
+                    'details': newDetails,
+                    'picture': newImageUrl,
+                  });
+
+                  // Check if price has changed and add to 'prices' subcollection
+                  if (newPrice != double.parse(price)) {
+                    await productRef.collection('prices').add({
+                      'price': newPrice,
+                      'time': FieldValue.serverTimestamp(),
+                    });
+                  }
+
+                  _fetchProducts(); // Refresh products after editing
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Save Changes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Function to show a dialog to add a new product
   void _showAddProductDialog(BuildContext context) {
     final TextEditingController productNameController = TextEditingController();
-    final TextEditingController categoryController = TextEditingController();
     final TextEditingController priceController = TextEditingController();
     final TextEditingController detailsController = TextEditingController();
     final TextEditingController imageUrlController = TextEditingController();
+    String _selectedUnit = 'kg'; // Default unit
 
     showDialog(
       context: context,
@@ -299,19 +582,50 @@ class _SettingsState extends State<Settings> {
                     controller: productNameController,
                     decoration: InputDecoration(labelText: 'Product Name'),
                   ),
-                  TextField(
-                    controller: categoryController,
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    },
+                    items: _allCategories.map((categoryDoc) {
+                      return DropdownMenuItem<String>(
+                        value: categoryDoc['category_name'],
+                        child: Text(categoryDoc['category_name']),
+                      );
+                    }).toList(),
                     decoration: InputDecoration(labelText: 'Category'),
                   ),
+                  SizedBox(height: 10),
                   TextField(
                     controller: priceController,
                     decoration: InputDecoration(labelText: 'Price'),
                     keyboardType: TextInputType.number,
                   ),
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: _selectedUnit,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedUnit = newValue!;
+                      });
+                    },
+                    items: ['kg', 'g', 'ton'].map((unit) {
+                      return DropdownMenuItem<String>(
+                        value: unit,
+                        child: Text(unit),
+                      );
+                    }).toList(),
+                    decoration: InputDecoration(labelText: 'Unit'),
+                  ),
+                  SizedBox(height: 10),
                   TextField(
                     controller: detailsController,
                     decoration: InputDecoration(labelText: 'Details'),
                   ),
+                  SizedBox(height: 10),
                   TextField(
                     controller: imageUrlController,
                     decoration:
@@ -335,20 +649,26 @@ class _SettingsState extends State<Settings> {
                   ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF4F)),
               onPressed: () async {
                 String productName = productNameController.text.trim();
-                String category = categoryController.text.trim();
                 double price =
                     double.tryParse(priceController.text.trim()) ?? 0;
                 String details = detailsController.text.trim();
                 String imageUrl = imageUrlController.text.trim();
 
-                if (productName.isNotEmpty && category.isNotEmpty) {
-                  await _productsCollection.add({
+                if (productName.isNotEmpty && _selectedCategory != null) {
+                  DocumentReference productRef = await _productsCollection.add({
                     'product_name': productName,
-                    'category': category,
-                    'price': price,
+                    'category': _selectedCategory,
                     'details': details,
                     'picture': imageUrl,
+                    'unit': _selectedUnit, // Unit from dropdown
                   });
+
+                  // Add the price to the subcollection 'prices'
+                  await productRef.collection('prices').add({
+                    'price': price,
+                    'time': FieldValue.serverTimestamp(),
+                  });
+
                   _fetchProducts(); // Refresh products after adding a new one
                 }
                 Navigator.of(context).pop();
@@ -391,110 +711,5 @@ class _SettingsState extends State<Settings> {
         );
       },
     );
-  }
-
-  // Function to show a dialog to edit an existing product
-  void _showEditProductDialog(
-    BuildContext context,
-    String productId,
-    String productName,
-    String category,
-    String price,
-    String details,
-    String picture,
-  ) {
-    final TextEditingController productNameController =
-        TextEditingController(text: productName);
-    final TextEditingController categoryController =
-        TextEditingController(text: category);
-    final TextEditingController priceController =
-        TextEditingController(text: price);
-    final TextEditingController detailsController =
-        TextEditingController(text: details);
-    final TextEditingController imageUrlController =
-        TextEditingController(text: picture);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Product'),
-          content: SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.4,
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: Column(
-                children: [
-                  TextField(
-                    controller: productNameController,
-                    decoration: InputDecoration(labelText: 'Product Name'),
-                  ),
-                  TextField(
-                    controller: categoryController,
-                    decoration: InputDecoration(labelText: 'Category'),
-                  ),
-                  TextField(
-                    controller: priceController,
-                    decoration: InputDecoration(labelText: 'Price'),
-                    keyboardType: TextInputType.number,
-                  ),
-                  TextField(
-                    controller: detailsController,
-                    decoration: InputDecoration(labelText: 'Details'),
-                  ),
-                  TextField(
-                    controller: imageUrlController,
-                    decoration:
-                        InputDecoration(labelText: 'Image URL (Optional)'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF4F)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF4F)),
-              onPressed: () async {
-                String newProductName = productNameController.text.trim();
-                String newCategory = categoryController.text.trim();
-                double newPrice =
-                    double.tryParse(priceController.text.trim()) ?? 0;
-                String newDetails = detailsController.text.trim();
-                String newImageUrl = imageUrlController.text.trim();
-
-                if (newProductName.isNotEmpty && newCategory.isNotEmpty) {
-                  await _productsCollection.doc(productId).update({
-                    'product_name': newProductName,
-                    'category': newCategory,
-                    'price': newPrice,
-                    'details': newDetails,
-                    'picture': newImageUrl,
-                  });
-                  _fetchProducts(); // Refresh products after editing
-                }
-                Navigator.of(context).pop();
-              },
-              child: Text('Save Changes'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
   }
 }
