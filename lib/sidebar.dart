@@ -14,6 +14,7 @@ class Sidebar extends StatefulWidget {
 class _SidebarState extends State<Sidebar> {
   int _hoveredIndex = -1; // To track the hovered tile
   bool _isUsersExpanded = false; // To track if the Users dropdown is expanded
+  bool _isFinanceExpanded = false; // Track the Finance tile's expansion
 
   // Function to handle user logout
   Future<void> _handleLogout() async {
@@ -46,23 +47,14 @@ class _SidebarState extends State<Sidebar> {
   Widget build(BuildContext context) {
     final userName =
         Provider.of<UserModel>(context).userName; // Get the user's name
+    final userEmail =
+        FirebaseAuth.instance.currentUser?.email ?? ''; // Get the user's email
+
+    // Check if the user has full access or limited access
+    final bool hasFullAccess = userEmail == 'anmlim@addu.edu.ph';
+
     return Drawer(
       width: 250,
-      // decoration: BoxDecoration(
-      //   borderRadius: BorderRadius.only(
-      //     bottomRight: Radius.circular(15),
-      //     topRight: Radius.circular(15),
-      //   ),
-      //   color: Colors.white,
-      //   boxShadow: [
-      //     BoxShadow(
-      //       blurRadius: 10,
-      //       color: Color.fromARGB(255, 109, 108, 108),
-      //       blurStyle: BlurStyle.normal,
-      //       offset: Offset.zero,
-      //     ),
-      //   ],
-      // ),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -108,11 +100,12 @@ class _SidebarState extends State<Sidebar> {
           _buildHoverableListTile(
               6, Icons.directions_car_outlined, 'Vehicle', '/vehicle'),
           _buildHoverableListTile(
-              7, Icons.groups_outlined, 'Employees', '/employee'),
-          _buildHoverableListTile(
               8, Icons.inventory_outlined, 'Inventory', '/inventory'),
-          _buildHoverableListTile(
-              9, Icons.payment_outlined, 'Finance', '/finance'),
+          if (hasFullAccess)
+            _buildHoverableListTile(
+                7, Icons.groups_outlined, 'Employees', '/employee'),
+          if (hasFullAccess)
+            _buildFinanceTile(), // Add finance only if full access
           _buildHoverableListTile(
               10, Icons.settings_outlined, 'Settings', '/settings'),
           // Logout tile with logout function
@@ -238,7 +231,77 @@ class _SidebarState extends State<Sidebar> {
     );
   }
 
-  // Updated method with an optional onTap callback
+  Widget _buildFinanceTile() {
+    return Column(
+      children: [
+        MouseRegion(
+          onEnter: (_) => setState(() => _hoveredIndex = 9),
+          onExit: (_) => setState(() => _hoveredIndex = -1),
+          child: Container(
+            height: 70,
+            color: _hoveredIndex == 9
+                ? Color(0xFF4CAF4F)
+                : Colors.transparent, // Changes color on hover
+            child: Center(
+              child: ListTile(
+                leading: Icon(
+                  Icons.payment_outlined,
+                  color: _hoveredIndex == 9 ? Colors.white : Color(0xFF4CAF4F),
+                ),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Finance',
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          color: _hoveredIndex == 9
+                              ? Colors.white
+                              : Color(0xFF4CAF4F),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isFinanceExpanded =
+                              !_isFinanceExpanded; // Toggle dropdown
+                        });
+                      },
+                      child: Container(
+                        height: 60,
+                        width: 60,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Icon(
+                            _isFinanceExpanded
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            color: _hoveredIndex == 9
+                                ? Colors.white
+                                : Color(0xFF4CAF4F),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_isFinanceExpanded) ...[
+          _buildsecondHoverableListTile(
+              12, Icons.money_off_outlined, 'Expenses', '/expenses'),
+          _buildsecondHoverableListTile(
+              13, Icons.monetization_on_outlined, 'Income', '/income'),
+        ],
+      ],
+    );
+  }
+
   Widget _buildHoverableListTile(
       int index, IconData icon, String title, String route,
       {VoidCallback? onTap}) {
@@ -269,9 +332,7 @@ class _SidebarState extends State<Sidebar> {
             ),
             onTap: onTap ??
                 () {
-                  if (route.isNotEmpty) {
-                    Navigator.pushReplacementNamed(context, route);
-                  }
+                  Navigator.pushReplacementNamed(context, route);
                 },
           ),
         ),

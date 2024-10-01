@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trashure1_1/screens/bookingdetails.dart';
+import 'package:trashure1_1/screens/map.dart';
 import 'package:trashure1_1/sidebar.dart';
 
 class Booking extends StatefulWidget {
@@ -139,6 +141,17 @@ class _BookingState extends State<Booking> {
                                     ],
                                   ),
                                 ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const Maps()), // Pushing the Maps widget
+                                    );
+                                  },
+                                  child: (Text("Map")),
+                                )
                               ],
                             ),
                             SizedBox(height: 20),
@@ -461,11 +474,24 @@ class _BookingState extends State<Booking> {
           ),
           Expanded(
             flex: 1,
-            child: IconButton(
-              icon: Icon(Icons.info_outline),
-              onPressed: () {
-                // Navigate to the employee profile screen and pass employee data
-              },
+            child: Container(
+              child: IconButton(
+                icon: Icon(
+                  Icons.info_outline,
+                  size: 20,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BookingDetails(
+                        bookingId: scheduleId,
+                        bookingData: bookingData,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],

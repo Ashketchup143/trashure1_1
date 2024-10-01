@@ -49,6 +49,14 @@ class _UserBusinessState extends State<UserBusiness> {
     });
   }
 
+  void _showUserInformation(Map<String, dynamic> user) {
+    Navigator.pushNamed(
+      context,
+      '/userinformation',
+      arguments: user,
+    );
+  }
+
   // Function to handle search changes
   void _onSearchChanged() {
     String searchTerm = _searchController.text.toLowerCase();
@@ -85,7 +93,7 @@ class _UserBusinessState extends State<UserBusiness> {
                       },
                     ),
                     Text(
-                      'Business Users',
+                      'Business/Organization Users',
                       style: GoogleFonts.poppins(
                         textStyle: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -154,7 +162,8 @@ class _UserBusinessState extends State<UserBusiness> {
                                 user['contact'],
                                 user['address'],
                                 user['uid'],
-                                user['status'], // Use status from the list
+                                user['status'],
+                                user,
                               );
                             },
                           ),
@@ -223,6 +232,7 @@ class _UserBusinessState extends State<UserBusiness> {
     String address,
     String userId,
     String status,
+    Map<String, dynamic> user,
   ) {
     // Ensure the status is never empty or null
     String displayStatus = status.isEmpty ? 'unbooked' : status;
@@ -271,10 +281,7 @@ class _UserBusinessState extends State<UserBusiness> {
             child: IconButton(
               icon: Icon(Icons.info_outline),
               onPressed: () {
-                // Handle details icon tap
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Details tapped for $name')),
-                );
+                _showUserInformation(user);
               },
             ),
           ),

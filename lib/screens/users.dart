@@ -32,9 +32,10 @@ class _UsersState extends State<Users> {
         'category': doc['category'],
         'contact': doc['contact'],
         'address': doc['address'],
+        'email': doc['email'],
         'uid': doc['uid'],
         'status': doc['status'] ??
-            'unbooked' // Default to 'unbooked' if status is empty or null
+            'unbooked', // Default to 'unbooked' if status is empty or null
       };
     }).toList();
 
@@ -59,6 +60,14 @@ class _UsersState extends State<Users> {
     });
   }
 
+  void _showUserInformation(Map<String, dynamic> user) {
+    Navigator.pushNamed(
+      context,
+      '/userinformation',
+      arguments: user,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +86,7 @@ class _UsersState extends State<Users> {
                     IconButton(
                       icon: Icon(Icons.menu, color: Colors.green, size: 25),
                       onPressed: () {
-                        Scaffold.of(context).openDrawer(); // Opens the drawer
+                        Scaffold.of(context).openDrawer();
                       },
                     ),
                     Text(
@@ -92,7 +101,6 @@ class _UsersState extends State<Users> {
                   ],
                 ),
                 SizedBox(height: 20),
-                // Search Bar
                 Row(
                   children: [
                     Container(
@@ -151,7 +159,8 @@ class _UsersState extends State<Users> {
                                 user['contact'],
                                 user['address'],
                                 user['uid'],
-                                user['status'], // Use status from the list
+                                user['status'],
+                                user,
                               );
                             },
                           ),
@@ -168,7 +177,6 @@ class _UsersState extends State<Users> {
     );
   }
 
-  // Adjusted title widget
   Widget title(String text, int flex) {
     return Expanded(
       flex: flex,
@@ -194,7 +202,6 @@ class _UsersState extends State<Users> {
     );
   }
 
-  // Function to determine status color based on status string
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'booked':
@@ -208,11 +215,10 @@ class _UsersState extends State<Users> {
       case 'unbooked':
         return Color(0xFFF5D322);
       default:
-        return Color.fromARGB(255, 150, 141, 61); // Default color if no match
+        return Color.fromARGB(255, 150, 141, 61);
     }
   }
 
-  // CheckboxListTile to display user details with status and icon for details
   Widget _buildCustomCheckboxTile(
     String uid,
     String name,
@@ -221,13 +227,13 @@ class _UsersState extends State<Users> {
     String address,
     String userId,
     String status,
+    Map<String, dynamic> user,
   ) {
-    // Ensure the status is never empty or null
     String displayStatus = status.isEmpty ? 'unbooked' : status;
 
     return CheckboxListTile(
       value: _selectedOptions[uid],
-      activeColor: Colors.green, // Turns green when checked
+      activeColor: Colors.green,
       onChanged: (bool? value) {
         setState(() {
           _selectedOptions[uid] = value!;
@@ -246,7 +252,7 @@ class _UsersState extends State<Users> {
             flex: 1,
             child: Container(
               height: 22.5,
-              width: 50,
+              width: 30,
               decoration: BoxDecoration(
                 color: _getStatusColor(displayStatus),
                 borderRadius: BorderRadius.circular(25),
@@ -270,16 +276,13 @@ class _UsersState extends State<Users> {
             child: IconButton(
               icon: Icon(Icons.info_outline),
               onPressed: () {
-                // Handle details icon tap
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Details tapped for $name')),
-                );
+                _showUserInformation(user);
               },
             ),
           ),
         ],
       ),
-      controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
+      controlAffinity: ListTileControlAffinity.leading,
     );
   }
 }

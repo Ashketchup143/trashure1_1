@@ -64,6 +64,14 @@ class _UserHouseState extends State<UserHouse> {
     });
   }
 
+  void _showUserInformation(Map<String, dynamic> user) {
+    Navigator.pushNamed(
+      context,
+      '/userinformation',
+      arguments: user,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +94,7 @@ class _UserHouseState extends State<UserHouse> {
                       },
                     ),
                     Text(
-                      'Users',
+                      'Household Users',
                       style: GoogleFonts.poppins(
                         textStyle: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -154,7 +162,8 @@ class _UserHouseState extends State<UserHouse> {
                                 user['contact'],
                                 user['address'],
                                 user['uid'],
-                                user['status'], // Use status from the list
+                                user['status'],
+                                user, // Use status from the list
                               );
                             },
                           ),
@@ -223,6 +232,7 @@ class _UserHouseState extends State<UserHouse> {
     String address,
     String userId,
     String status,
+    Map<String, dynamic> user,
   ) {
     // Ensure the status is never empty or null
     String displayStatus = status.isEmpty ? 'unbooked' : status;
@@ -271,10 +281,7 @@ class _UserHouseState extends State<UserHouse> {
             child: IconButton(
               icon: Icon(Icons.info_outline),
               onPressed: () {
-                // Handle details icon tap
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Details tapped for $name')),
-                );
+                _showUserInformation(user);
               },
             ),
           ),
