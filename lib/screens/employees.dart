@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trashure1_1/sidebar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class Employees extends StatefulWidget {
   const Employees({super.key});
@@ -140,9 +142,13 @@ class _EmployeesState extends State<Employees> {
                                       'Add Employee',
                                       style: GoogleFonts.roboto(
                                           textStyle: TextStyle(
-                                              fontWeight: FontWeight.w300)),
+                                              fontWeight: FontWeight.w300,
+                                              color: Colors.white)),
                                     ),
-                                    Icon(Icons.add),
+                                    Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -167,11 +173,13 @@ class _EmployeesState extends State<Employees> {
                                       'Payroll',
                                       style: GoogleFonts.roboto(
                                           textStyle: TextStyle(
-                                              fontWeight: FontWeight.w300)),
+                                              fontWeight: FontWeight.w300,
+                                              color: Colors.white)),
                                     ),
                                     Icon(
                                       Icons.receipt_long_outlined,
                                       size: 20,
+                                      color: Colors.white,
                                     ),
                                   ],
                                 ),
@@ -368,6 +376,8 @@ class _EmployeesState extends State<Employees> {
     TextEditingController birthDateController = TextEditingController();
     TextEditingController expTimeInController = TextEditingController();
     TextEditingController expTimeOutController = TextEditingController();
+    TextEditingController passwordController =
+        TextEditingController(); // New controller for password
 
     showDialog(
       context: context,
@@ -376,7 +386,7 @@ class _EmployeesState extends State<Employees> {
           title: Text('Add New Employee'),
           content: SingleChildScrollView(
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.55,
+              height: MediaQuery.of(context).size.height * 0.65,
               width: MediaQuery.of(context).size.width * 0.4,
               child: Column(
                 children: [
@@ -395,6 +405,12 @@ class _EmployeesState extends State<Employees> {
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(labelText: 'Email Address'),
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                        labelText: 'Password'), // New field for password
+                    obscureText: true, // Hide password input
                   ),
                   TextField(
                     controller: positionController,
@@ -430,6 +446,8 @@ class _EmployeesState extends State<Employees> {
                     contactController.text.isEmpty ||
                     addressController.text.isEmpty ||
                     emailController.text.isEmpty ||
+                    passwordController
+                        .text.isEmpty || // Ensure password is provided
                     positionController.text.isEmpty ||
                     salaryController.text.isEmpty ||
                     birthDateController.text.isEmpty) {
@@ -438,27 +456,46 @@ class _EmployeesState extends State<Employees> {
                   return;
                 }
 
-                // Add new employee to Firestore
-                await FirebaseFirestore.instance.collection('employees').add({
-                  'name': nameController.text,
-                  'contact_number': contactController.text,
-                  'address': addressController.text,
-                  'email_address': emailController.text,
-                  'position': positionController.text,
-                  'salary_per_hour': salaryController.text,
-                  'birth_date': birthDateController.text,
-                  'exp_time_in': expTimeInController.text.isNotEmpty
-                      ? expTimeInController.text
-                      : "",
-                  'exp_time_out': expTimeOutController.text.isNotEmpty
-                      ? expTimeOutController.text
-                      : "",
-                });
+                try {
+                  // Create user in Firebase Authentication
+                  UserCredential userCredential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                    email: emailController.text,
+                    password:
+                        passwordController.text, // Use the provided password
+                  );
+                  String userUid = userCredential.user!.uid;
 
-                Navigator.of(context).pop(); // Close dialog
-                _fetchEmployees(); // Refresh the employee list
+                  // Add new employee to Firestore with the UID
+                  await FirebaseFirestore.instance.collection('employees').add({
+                    'uid': userUid, // Store the UID for reference
+                    'name': nameController.text,
+                    'contact_number': contactController.text,
+                    'address': addressController.text,
+                    'email_address': emailController.text,
+                    'position': positionController.text,
+                    'salary_per_hour': salaryController.text,
+                    'password': passwordController.text,
+                    'birth_date': birthDateController.text,
+                    'exp_time_in': expTimeInController.text.isNotEmpty
+                        ? expTimeInController.text
+                        : "",
+                    'exp_time_out': expTimeOutController.text.isNotEmpty
+                        ? expTimeOutController.text
+                        : "",
+                  });
+
+                  Navigator.of(context).pop(); // Close dialog
+                  _fetchEmployees(); // Refresh the employee list
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to add employee: $e')),
+                  );
+                }
               },
-              child: Text('Add Employee'),
+              child: Text(
+                'Add Employee',
+              ),
             ),
             ElevatedButton(
               style:
@@ -472,5 +509,87 @@ class _EmployeesState extends State<Employees> {
         );
       },
     );
+  }
+
+  // Time In: Adds or updates the "time_in" field for the current date
+  Future<void> _timeIn(String employeeId) async {
+    String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    DocumentReference employeeRef =
+        FirebaseFirestore.instance.collection('employees').doc(employeeId);
+
+    // Reference the subcollection and document for the current date
+    DocumentReference dailyRecordRef =
+        employeeRef.collection('daily_time_record').doc(currentDate);
+
+    try {
+      // Fetch the document to check if it exists
+      DocumentSnapshot dailyRecord = await dailyRecordRef.get();
+
+      // Check if the document exists
+      if (!dailyRecord.exists) {
+        // No document for today exists, create the subcollection and the document
+        await dailyRecordRef.set({
+          'time_in': Timestamp.now(),
+          'time_out': null, // Initialize time_out as null
+        });
+        print("Subcollection 'daily_time_record' created with time_in");
+      } else {
+        // If the record exists, just update the time_in field
+        await dailyRecordRef.update({
+          'time_in': Timestamp.now(),
+        });
+        print("time_in updated in the subcollection 'daily_time_record'");
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Time In recorded for $employeeId')),
+      );
+    } catch (e) {
+      // Log the error
+      print('Error creating subcollection: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to record Time In: $e')),
+      );
+    }
+  }
+
+// Time Out: Adds or updates the "time_out" field for the current date
+  Future<void> _timeOut(String employeeId) async {
+    String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    DocumentReference employeeRef =
+        FirebaseFirestore.instance.collection('employees').doc(employeeId);
+
+    // Reference the subcollection and document for the current date
+    DocumentReference dailyRecordRef =
+        employeeRef.collection('daily_time_record').doc(currentDate);
+
+    try {
+      // Fetch the document to check if it exists
+      DocumentSnapshot dailyRecord = await dailyRecordRef.get();
+
+      if (dailyRecord.exists) {
+        // If the record exists, update the time_out field
+        await dailyRecordRef.update({
+          'time_out': Timestamp.now(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Time Out recorded for $employeeId')),
+        );
+        print("time_out updated in the subcollection 'daily_time_record'");
+      } else {
+        // If no Time In is found for today, show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No Time In found for today!')),
+        );
+        print("No time_in found for today; cannot record time_out");
+      }
+    } catch (e) {
+      // Log the error
+      print('Error updating time_out: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to record Time Out: $e')),
+      );
+    }
   }
 }

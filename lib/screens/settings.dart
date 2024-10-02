@@ -84,7 +84,6 @@ class _SettingsState extends State<Settings> {
           width: MediaQuery.of(context).size.width,
           child: Row(
             children: [
-              Sidebar(),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 20, left: 40, right: 40),
@@ -445,7 +444,7 @@ class _SettingsState extends State<Settings> {
           title: Text('Edit Product'),
           content: SingleChildScrollView(
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.4,
+              height: MediaQuery.of(context).size.height * 0.6,
               width: MediaQuery.of(context).size.width * 0.4,
               child: Column(
                 children: [
@@ -574,7 +573,7 @@ class _SettingsState extends State<Settings> {
           title: Text('Add New Product'),
           content: SingleChildScrollView(
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.4,
+              height: MediaQuery.of(context).size.height * 0.6,
               width: MediaQuery.of(context).size.width * 0.4,
               child: Column(
                 children: [

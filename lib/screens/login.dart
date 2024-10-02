@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:trashure1_1/user_model.dart'; // Import the user model
 
@@ -15,6 +16,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String _errorMessage = '';
 
@@ -26,12 +28,37 @@ class _LoginState extends State<Login> {
           password: _passwordController.text.trim(),
         );
 
-        // Set the user's name or email in UserModel
-        String userName =
-            userCredential.user!.displayName ?? userCredential.user!.email!;
-        Provider.of<UserModel>(context, listen: false).setUserName(userName);
+        // Special handling for the master user
+        if (_emailController.text.trim() == 'anmlim@addu.edu.ph') {
+          // Set the master user name or email in UserModel
+          Provider.of<UserModel>(context, listen: false)
+              .setUserName(userCredential.user!.email!);
 
-        Navigator.pushReplacementNamed(context, '/dashboard');
+          Navigator.pushReplacementNamed(context, '/dashboard');
+          return;
+        }
+
+        // Check if the email is listed in the 'employees' collection in Firestore
+        QuerySnapshot employeeSnapshot = await _firestore
+            .collection('employees')
+            .where('email_address', isEqualTo: _emailController.text.trim())
+            .get();
+
+        if (employeeSnapshot.docs.isNotEmpty) {
+          // User exists in employees collection, proceed
+          var employeeData =
+              employeeSnapshot.docs.first.data() as Map<String, dynamic>;
+          String userName = employeeData['name'] ?? userCredential.user!.email!;
+          Provider.of<UserModel>(context, listen: false).setUserName(userName);
+
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else {
+          // User is not listed in employees collection
+          await _auth.signOut();
+          setState(() {
+            _errorMessage = 'You are not authorized to access this system.';
+          });
+        }
       } on FirebaseAuthException catch (e) {
         setState(() {
           _errorMessage = e.message ?? 'An error occurred';

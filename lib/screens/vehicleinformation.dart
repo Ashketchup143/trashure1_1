@@ -174,33 +174,52 @@ class _VehicleInformationState extends State<VehicleInformation> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            buildVehicleDetail('Vehicle ID', vehicleData!['id']),
-            buildVehicleDetail('Assigned Driver', assignedDriver),
-            buildEditableVehicleDetail('Brand', 'brand'),
-            buildEditableVehicleDetail('Color', 'color'),
-            buildEditableVehicleDetail('Fuel Type', 'fuel_type'),
-            buildEditableVehicleDetail(
-                'License Plate Number', 'license_plate_number'),
-            buildEditableVehicleDetail('Model', 'model'),
-            buildEditableVehicleDetail('Vehicle Type', 'vehicle_type'),
-            buildEditableVehicleDetail('Weight Limit', 'weight_limit',
-                isNumber: true),
-            buildEditableVehicleDetail(
-                'Last Service Date', 'last_service_date'),
-            buildEditableVehicleDetail(
-                'Next Scheduled Maintenance', 'next_scheduled_maintenance'),
-            buildEditableVehicleDetail('Purchase Date', 'purchase_date'),
-            buildEditableVehicleDetail(
-                'Registration Expire Date', 'registration_expire_date'),
-            buildEditableVehicleDetail(
-                'Registration Number', 'registration_number'),
-            buildEditableVehicleDetail(
-                'Year of Manufacture', 'year_of_manufacture'),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildVehicleDetail('Vehicle ID', vehicleData!['id']),
+                    buildVehicleDetail('Assigned Driver', assignedDriver),
+                    buildEditableVehicleDetail('Brand', 'brand'),
+                    buildEditableVehicleDetail('Color', 'color'),
+                    buildEditableVehicleDetail('Fuel Type', 'fuel_type'),
+                    buildEditableVehicleDetail(
+                        'License Plate Number', 'license_plate_number'),
+                    buildEditableVehicleDetail('Model', 'model'),
+                    buildEditableVehicleDetail('Vehicle Type', 'vehicle_type'),
+                  ],
+                ),
+              ),
+              SizedBox(width: 16.0), // Space between the two columns
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildEditableVehicleDetail('Weight Limit', 'weight_limit',
+                        isNumber: true),
+                    buildEditableVehicleDetail(
+                        'Last Service Date', 'last_service_date'),
+                    buildEditableVehicleDetail('Next Scheduled Maintenance',
+                        'next_scheduled_maintenance'),
+                    buildEditableVehicleDetail(
+                        'Purchase Date', 'purchase_date'),
+                    buildEditableVehicleDetail(
+                        'Registration Expire Date', 'registration_expire_date'),
+                    buildEditableVehicleDetail(
+                        'Registration Number', 'registration_number'),
+                    buildEditableVehicleDetail(
+                        'Year of Manufacture', 'year_of_manufacture'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

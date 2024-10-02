@@ -6,9 +6,11 @@ import 'package:trashure1_1/screens/dashboard.dart';
 import 'package:trashure1_1/screens/employeeprofile.dart';
 import 'package:trashure1_1/screens/employees.dart';
 import 'package:trashure1_1/screens/finance.dart';
+import 'package:trashure1_1/screens/inflow.dart';
 import 'package:trashure1_1/screens/inventory.dart';
 import 'package:trashure1_1/screens/login.dart';
 import 'package:trashure1_1/screens/map.dart';
+import 'package:trashure1_1/screens/outflow.dart';
 import 'package:trashure1_1/screens/settings.dart';
 import 'package:trashure1_1/screens/userbusiness.dart';
 import 'package:trashure1_1/screens/userhouse.dart';
@@ -56,7 +58,10 @@ class MyApp extends StatelessWidget {
           '/employeeprofile': (context) => EmployeeProfileScreen(),
           '/vehicleinformation': (context) => VehicleInformation(),
           '/userinformation': (context) => UserInformation(),
-          '/map': (context) => Maps(),
+          // '/map': (context) => Maps(),
+          '/finance': (context) => Finance(),
+          '/inflow': (context) => Inflow(),
+          '/outflow': (context) => Outflow(),
         },
       ),
     );

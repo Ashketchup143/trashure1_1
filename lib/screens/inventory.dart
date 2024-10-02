@@ -123,6 +123,8 @@ class _InventoryState extends State<Inventory> {
                 SizedBox(height: 20),
                 // Bordered Container for Titles and List
                 Container(
+                  height: MediaQuery.of(context).size.height * .8,
+                  width: MediaQuery.of(context).size.width,
                   decoration: BoxDecoration(
                     border: Border.all(), // Add border
                   ),

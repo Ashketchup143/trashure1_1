@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trashure1_1/screens/map.dart';
 
 class BookingDetails extends StatelessWidget {
   final String bookingId;
@@ -11,7 +12,22 @@ class BookingDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Booking Details'),
+        title: Row(
+          children: [
+            Text('Booking Details'),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => Maps(
+                          bookingId: bookingId)), // Pushing the Maps widget
+                );
+              },
+              child: (Text("Map")),
+            )
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -90,11 +106,11 @@ class BookingDetails extends StatelessWidget {
                                       recyclables.forEach((recyclableDoc) {
                                         var recyclableData = recyclableDoc
                                             .data() as Map<String, dynamic>;
-                                        double quantity =
-                                            recyclableData['quantity'] ?? 0;
+                                        double weight =
+                                            recyclableData['weight'] ?? 0;
                                         double price =
                                             recyclableData['price'] ?? 0;
-                                        double itemTotal = quantity * price;
+                                        double itemTotal = weight * price;
 
                                         userTotal += itemTotal;
                                       });
@@ -113,18 +129,18 @@ class BookingDetails extends StatelessWidget {
                                             var recyclableData = recyclableDoc
                                                 .data() as Map<String, dynamic>;
 
-                                            double quantity =
-                                                recyclableData['quantity'] ?? 0;
+                                            double weight =
+                                                recyclableData['weight'] ?? 0;
                                             double price =
                                                 recyclableData['price'] ?? 0;
-                                            double itemTotal = quantity *
+                                            double itemTotal = weight *
                                                 price; // Calculate item total
 
                                             return ListTile(
                                               title: Text(
                                                   "Type: ${recyclableData['type'] ?? 'No Type'}"),
                                               subtitle: Text(
-                                                  "Quantity: $quantity, Price: \$${price.toStringAsFixed(2)}, Item Total: \$${itemTotal.toStringAsFixed(2)}"),
+                                                  "Weight: $weight kg, Price: \$${price.toStringAsFixed(2)}, Item Total: \$${itemTotal.toStringAsFixed(2)}"),
                                               trailing: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
@@ -202,7 +218,6 @@ class BookingDetails extends StatelessWidget {
       List<QueryDocumentSnapshot> users) async {
     double overallTotal = 0;
     for (var userDoc in users) {
-      var userData = userDoc.data() as Map<String, dynamic>;
       var recyclablesSnapshot = await FirebaseFirestore.instance
           .collection('bookings')
           .doc(bookingId)
@@ -213,9 +228,9 @@ class BookingDetails extends StatelessWidget {
 
       for (var recyclableDoc in recyclablesSnapshot.docs) {
         var recyclableData = recyclableDoc.data() as Map<String, dynamic>;
-        double quantity = recyclableData['quantity'] ?? 0;
+        double weight = recyclableData['weight'] ?? 0;
         double price = recyclableData['price'] ?? 0;
-        double itemTotal = quantity * price;
+        double itemTotal = weight * price;
 
         overallTotal += itemTotal;
       }
@@ -228,8 +243,8 @@ class BookingDetails extends StatelessWidget {
       String userId, String recyclableId, Map<String, dynamic> recyclableData) {
     final TextEditingController typeController =
         TextEditingController(text: recyclableData['type']);
-    final TextEditingController quantityController =
-        TextEditingController(text: recyclableData['quantity'].toString());
+    final TextEditingController weightController =
+        TextEditingController(text: recyclableData['weight'].toString());
     final TextEditingController priceController =
         TextEditingController(text: recyclableData['price'].toString());
 
@@ -245,8 +260,8 @@ class BookingDetails extends StatelessWidget {
               decoration: InputDecoration(labelText: 'Type'),
             ),
             TextField(
-              controller: quantityController,
-              decoration: InputDecoration(labelText: 'Quantity'),
+              controller: weightController,
+              decoration: InputDecoration(labelText: 'Weight (kg)'),
               keyboardType: TextInputType.number,
             ),
             TextField(
@@ -269,7 +284,7 @@ class BookingDetails extends StatelessWidget {
                   .doc(recyclableId)
                   .update({
                 'type': typeController.text,
-                'quantity': int.tryParse(quantityController.text) ?? 0,
+                'weight': double.tryParse(weightController.text) ?? 0.0,
                 'price': double.tryParse(priceController.text) ?? 0.0,
               });
               Navigator.of(context).pop();
@@ -284,7 +299,7 @@ class BookingDetails extends StatelessWidget {
   void showAddRecyclableDialog(
       BuildContext context, String bookingId, String userId) {
     final TextEditingController typeController = TextEditingController();
-    final TextEditingController quantityController = TextEditingController();
+    final TextEditingController weightController = TextEditingController();
     final TextEditingController priceController = TextEditingController();
 
     showDialog(
@@ -299,8 +314,8 @@ class BookingDetails extends StatelessWidget {
               decoration: InputDecoration(labelText: 'Type'),
             ),
             TextField(
-              controller: quantityController,
-              decoration: InputDecoration(labelText: 'Quantity'),
+              controller: weightController,
+              decoration: InputDecoration(labelText: 'Weight (kg)'),
               keyboardType: TextInputType.number,
             ),
             TextField(
@@ -322,7 +337,7 @@ class BookingDetails extends StatelessWidget {
                   .collection('recyclables')
                   .add({
                 'type': typeController.text,
-                'quantity': int.tryParse(quantityController.text) ?? 0,
+                'weight': double.tryParse(weightController.text) ?? 0.0,
                 'price': double.tryParse(priceController.text) ?? 0.0,
               });
               Navigator.of(context).pop();

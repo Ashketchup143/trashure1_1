@@ -294,9 +294,9 @@ class _SidebarState extends State<Sidebar> {
         ),
         if (_isFinanceExpanded) ...[
           _buildsecondHoverableListTile(
-              12, Icons.money_off_outlined, 'Expenses', '/expenses'),
+              12, Icons.money_off_outlined, 'Outflow', '/outflow'),
           _buildsecondHoverableListTile(
-              13, Icons.monetization_on_outlined, 'Income', '/income'),
+              13, Icons.monetization_on_outlined, 'Inflow', '/inflow'),
         ],
       ],
     );

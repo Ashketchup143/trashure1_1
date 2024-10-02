@@ -162,9 +162,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       appBar: AppBar(
         title: Text(
           'Employee Profile',
-          style: GoogleFonts.poppins(textStyle: TextStyle(color: Colors.white)),
+          style: GoogleFonts.poppins(
+              textStyle: TextStyle(color: const Color.fromARGB(255, 0, 0, 0))),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: [
           if (employee != null)
             IconButton(
