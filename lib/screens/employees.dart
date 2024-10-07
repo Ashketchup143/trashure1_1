@@ -293,10 +293,85 @@ class _EmployeesState extends State<Employees> {
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     setState(() {
                       _attendanceStatus[option] = !_attendanceStatus[option]!;
                     });
+
+                    String todayDate =
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                    if (_attendanceStatus[option]!) {
+                      // Time Out
+                      try {
+                        DocumentReference employeeDocRef = FirebaseFirestore
+                            .instance
+                            .collection('employees')
+                            .doc(employeeid);
+
+                        // Get the 'daily_time_record' document for today
+                        QuerySnapshot dtrSnapshot = await employeeDocRef
+                            .collection('daily_time_record')
+                            .where('date', isEqualTo: todayDate)
+                            .limit(1)
+                            .get();
+
+                        if (dtrSnapshot.docs.isNotEmpty) {
+                          // Update 'time_out' field
+                          DocumentReference dtrDocRef =
+                              dtrSnapshot.docs.first.reference;
+                          await dtrDocRef.update({
+                            'time_out': FieldValue.serverTimestamp(),
+                          });
+                        } else {
+                          // No existing record found, create a new one with time_out
+                          await employeeDocRef
+                              .collection('daily_time_record')
+                              .add({
+                            'date': todayDate,
+                            'time_in': null,
+                            'time_out': FieldValue.serverTimestamp(),
+                          });
+                        }
+                      } catch (e) {
+                        print('Error during Time Out: $e');
+                      }
+                    } else {
+                      // Time In
+                      try {
+                        DocumentReference employeeDocRef = FirebaseFirestore
+                            .instance
+                            .collection('employees')
+                            .doc(employeeid);
+
+                        // Check if there's already a 'daily_time_record' for today
+                        QuerySnapshot dtrSnapshot = await employeeDocRef
+                            .collection('daily_time_record')
+                            .where('date', isEqualTo: todayDate)
+                            .limit(1)
+                            .get();
+
+                        if (dtrSnapshot.docs.isEmpty) {
+                          // No existing record, create one
+                          await employeeDocRef
+                              .collection('daily_time_record')
+                              .add({
+                            'date': todayDate,
+                            'time_in': FieldValue.serverTimestamp(),
+                            'time_out': null,
+                          });
+                        } else {
+                          // Existing record found, update 'time_in'
+                          DocumentReference dtrDocRef =
+                              dtrSnapshot.docs.first.reference;
+                          await dtrDocRef.update({
+                            'time_in': FieldValue.serverTimestamp(),
+                          });
+                        }
+                      } catch (e) {
+                        print('Error during Time In: $e');
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _attendanceStatus[option]!

@@ -3,14 +3,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart'; // Import provider
 import 'package:trashure1_1/screens/booking.dart';
 import 'package:trashure1_1/screens/dashboard.dart';
+import 'package:trashure1_1/screens/driverbookingdetails.dart';
 import 'package:trashure1_1/screens/employeeprofile.dart';
 import 'package:trashure1_1/screens/employees.dart';
+import 'package:trashure1_1/screens/driver.dart';
 import 'package:trashure1_1/screens/finance.dart';
 import 'package:trashure1_1/screens/inflow.dart';
 import 'package:trashure1_1/screens/inventory.dart';
 import 'package:trashure1_1/screens/login.dart';
-import 'package:trashure1_1/screens/map.dart';
 import 'package:trashure1_1/screens/outflow.dart';
+import 'package:trashure1_1/screens/schedule.dart';
 import 'package:trashure1_1/screens/settings.dart';
 import 'package:trashure1_1/screens/userbusiness.dart';
 import 'package:trashure1_1/screens/userhouse.dart';
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/login', // Set initial route to the login screen
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => Login(),
+          '/': (context) => Booking(),
           '/login': (context) => Login(),
           '/dashboard': (context) => Dashboard(),
           '/users': (context) => Users(),
@@ -62,6 +64,9 @@ class MyApp extends StatelessWidget {
           '/finance': (context) => Finance(),
           '/inflow': (context) => Inflow(),
           '/outflow': (context) => Outflow(),
+          '/schedule': (context) => Schedule(),
+          '/driver': (context) => Driver(),
+          '/driverbookingdetails': (context) => DriverBookingDetails(),
         },
       ),
     );

@@ -73,16 +73,21 @@ class _SidebarState extends State<Sidebar> {
                   ),
                 ),
                 SizedBox(height: 8),
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: AssetImage('assets/ash.jpg'),
+                Image.asset(
+                  'assets/trashure_noname.png',
+                  width: 300,
+                  height: 200,
                 ),
-                SizedBox(height: 15),
+                // CircleAvatar(
+                //   radius: 60,
+                //   backgroundImage: AssetImage('assets/trashure.jpg'),
+                // ),
+                SizedBox(height: 10),
                 Text(
                   userName,
                   style: GoogleFonts.poppins(),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
                 Container(
                   height: 1,
                   decoration: BoxDecoration(
@@ -96,7 +101,7 @@ class _SidebarState extends State<Sidebar> {
               4, Icons.dashboard_outlined, 'Dashboard', '/dashboard'),
           _buildUsersTile(),
           _buildHoverableListTile(
-              5, Icons.library_books_outlined, 'Bookings', '/bookings'),
+              5, Icons.library_books_outlined, 'Bookings', '/schedule'),
           _buildHoverableListTile(
               6, Icons.directions_car_outlined, 'Vehicle', '/vehicle'),
           _buildHoverableListTile(
@@ -111,6 +116,8 @@ class _SidebarState extends State<Sidebar> {
           // Logout tile with logout function
           _buildHoverableListTile(11, Icons.logout_outlined, 'Logout', '',
               onTap: _handleLogout),
+          _buildHoverableListTile(
+              15, Icons.drive_eta_outlined, 'Driver', '/driver'),
         ],
       ),
     );
